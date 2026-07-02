@@ -1,0 +1,56 @@
+[
+  {
+    "section": "A",
+    "title": "General Provisions",
+    "issue": "03",
+    "date": "2026-06-25",
+    "pages": 84,
+    "anchors_found": 329,
+    "pages_without_anchors": 30
+  },
+  {
+    "section": "B",
+    "title": "Sporting",
+    "issue": "07",
+    "date": "2026-06-25",
+    "pages": 99,
+    "anchors_found": 485,
+    "pages_without_anchors": 13
+  },
+  {
+    "section": "C",
+    "title": "Technical",
+    "issue": "19",
+    "date": "2026-06-25",
+    "pages": 257,
+    "anchors_found": 1158,
+    "pages_without_anchors": 70
+  },
+  {
+    "section": "D",
+    "title": "Financial - F1 Teams",
+    "issue": "07",
+    "date": "2026-06-25",
+    "pages": 64,
+    "anchors_found": 301,
+    "pages_without_anchors": 22
+  },
+  {
+    "section": "E",
+    "title": "Financial - PU Manufacturers",
+    "issue": "06",
+    "date": "2026-06-25",
+    "pages": 60,
+    "anchors_found": 191,
+    "pages_without_anchors": 26
+  },
+  {
+    "section": "F",
+    "title": "Operational",
+    "issue": "09",
+    "date": "2026-06-25",
+    "pages": 32,
+    "anchors_found": 112,
+    "pages_without_anchors": 4
+  }
+]
