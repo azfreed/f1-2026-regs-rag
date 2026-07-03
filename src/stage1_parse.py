@@ -139,6 +139,54 @@ def find_anchor(line_text: str, pattern: re.Pattern) -> str | None:
     return m.group(1) if m else None
 
 
+# A line matching ANCHOR_PATTERN isn't always a real clause heading. The
+# document also cites clause numbers inline within running text ("A8,
+# provided that...", "E1.3.2 and E1.3.3;"), and where such a citation lands
+# at the start of a wrapped display line, it matches the pattern exactly
+# like a real heading does. Found via the chunk-size check: dozens of
+# anchors across every section turned out to be introduced a second time,
+# far from their real location, merging unrelated content into one bucket.
+# A text-pattern heuristic (checking for a following comma or "and") only
+# caught 19 of these -- most inline citations don't have that shape (e.g.
+# "D5.1.1.y., D5.1.1.z. and D5.1.2." or "F1 Team" as the common noun,
+# which matches Section F's own anchor pattern).
+#
+# Real headings are visually bolded at the anchor number; inline citations
+# are not. Validated across all 2,103 anchors detected before this filter:
+# 1,983 bold, 120 not-bold. Every not-bold example inspected was a
+# confirmed false positive (fragment citations, multi-citation lists, "F1"
+# as a common noun); no bold example inspected looked like a false
+# positive, including legitimate cases where a clause number is
+# genuinely restated as a real heading in the future-amendment appendices
+# (e.g. Section D's D14.1.1 appearing once in force, once in Appendix D2
+# with amended wording -- both bolded, both real headings, correctly kept
+# as two separate anchor instances for stage 2's status tagging).
+def anchor_is_bold(page: "pdfplumber.page.Page", line: dict, anchor_text: str) -> bool:
+    x_limit = line["x0"] + len(anchor_text) * 7
+    chars = [c for c in page.chars if abs(c["top"] - line["top"]) < 2 and c["x0"] < x_limit]
+    return any("Bold" in c.get("fontname", "") for c in chars)
+
+
+# Table-of-contents pages produce false anchors: each entry is formatted as
+# "C4.7 Determination of Nominal Tyre Mass 61" (anchor + title + trailing
+# target page number), which matches ANCHOR_PATTERN just like a real clause
+# heading does. Found via the chunk-size check: TOC-page anchors were
+# merging with the real clause hundreds of pages later into one giant
+# chunk. A raw anchor-count-per-page threshold can't separate TOC from
+# real content -- dense real pages (e.g. Section D page 22, lettered
+# sub-clauses) reach the same anchor counts as TOC pages. The reliable
+# signal is the trailing page number: checked across the corpus, confirmed
+# TOC pages have 97-100% of their anchor-lines ending in a bare number,
+# while every real content page checked is at 0%, with one exception at
+# 67% (Section C page 101, camera mounting positions literally titled
+# "Position 3", "Position 4", etc. -- real content that coincidentally
+# ends in a small number). The 30-point gap between 67% and 97% gives a
+# 90% threshold a safe margin on both sides.
+TOC_TRAILING_PAGENUM = re.compile(r"\s\d{1,3}$")
+TOC_FRACTION_THRESHOLD = 0.9
+TOC_MIN_ANCHORS = 5
+
+
 # ---------------------------------------------------------------------------
 # Per-page parsing
 # ---------------------------------------------------------------------------
@@ -151,6 +199,7 @@ class PageRecord:
     lines: list[str]
     anchors: list[dict]       # [{"anchor": "B1.2.2", "line_index": 0}, ...]
     line_colors: list[list]   # dominant non_stroking_color per body line
+    is_toc: bool = False      # True if this page was excluded as a table-of-contents page
 
 
 def classify_line(line: dict, footer_zone_top: float) -> str:
@@ -212,6 +261,7 @@ def parse_pdf(path: Path, section: str, log: list) -> list[PageRecord]:
             body_lines: list[str] = []
             body_colors: list[list] = []
             anchors: list[dict] = []
+            raw_candidates: list[dict] = []  # anchor-pattern matches before the bold filter, used only for TOC detection
 
             for line in lines:
                 cls = classify_line(line, footer_zone_top)
@@ -243,26 +293,51 @@ def parse_pdf(path: Path, section: str, log: list) -> list[PageRecord]:
                         })
                     continue
 
-                anchor = find_anchor(line["text"], anchor_pattern)
-                if anchor:
-                    anchors.append({"anchor": anchor, "line_index": len(body_lines)})
+                raw_anchor = find_anchor(line["text"], anchor_pattern)
+                if raw_anchor:
+                    raw_candidates.append({"anchor": raw_anchor, "line_index": len(body_lines)})
+                    if anchor_is_bold(page, line, raw_anchor):
+                        anchors.append({"anchor": raw_anchor, "line_index": len(body_lines)})
                 body_lines.append(line["text"])
                 body_colors.append(dominant_color(page, line))
 
-            if page_code is None:
-                log.append({
-                    "action": "page_code_not_confirmed",
-                    "section": section, "page": page_no, "expected": expected_code,
-                })
+            # TOC detection runs on raw_candidates, not the bold-filtered
+            # anchors list. TOC entries are themselves not bold, so the
+            # bold filter alone already suppresses them as fake anchors --
+            # but that means the (already bold-filtered) anchors list is
+            # too sparse for the trailing-page-number fraction check to
+            # ever fire, which would leave the TOC page's redundant text
+            # sitting unattributed in body content instead of excluded.
+            is_toc = False
+            if len(raw_candidates) >= TOC_MIN_ANCHORS:
+                toc_like = sum(
+                    1 for a in raw_candidates
+                    if TOC_TRAILING_PAGENUM.search(body_lines[a["line_index"]])
+                )
+                if toc_like / len(raw_candidates) >= TOC_FRACTION_THRESHOLD:
+                    is_toc = True
 
-            if not anchors and page_no > 3:
+            if is_toc:
                 log.append({
-                    "action": "no_anchors_on_page", "section": section, "page": page_no,
+                    "action": "toc_page_excluded", "section": section, "page": page_no,
+                    "anchors_removed": len(anchors),
                 })
+                body_lines, anchors, body_colors = [], [], []
+            else:
+                if page_code is None:
+                    log.append({
+                        "action": "page_code_not_confirmed",
+                        "section": section, "page": page_no, "expected": expected_code,
+                    })
+                if not anchors and page_no > 3:
+                    log.append({
+                        "action": "no_anchors_on_page", "section": section, "page": page_no,
+                    })
 
             records.append(PageRecord(
                 section=section, pdf_page=page_no, page_code=page_code,
                 lines=body_lines, anchors=anchors, line_colors=body_colors,
+                is_toc=is_toc,
             ))
 
     return records
@@ -306,9 +381,11 @@ def main() -> None:
     unrecognized = sum(1 for e in full_log if e.get("action") == "unrecognized_header_footer_band_text")
     unconfirmed_codes = sum(1 for e in full_log if e.get("action") == "page_code_not_confirmed")
     no_anchor_pages = sum(1 for e in full_log if e.get("action") == "no_anchors_on_page")
+    toc_excluded = sum(1 for e in full_log if e.get("action") == "toc_page_excluded")
     print(f"\nUnrecognized text caught in header/footer bands: {unrecognized}")
     print(f"Pages with unconfirmed page code: {unconfirmed_codes}")
     print(f"Pages with no anchors found (page > 3): {no_anchor_pages}")
+    print(f"TOC pages detected and excluded: {toc_excluded}")
     print("Review data/parsed/_stage1_log.json for details.")
 
 
