@@ -5,8 +5,8 @@
     "issue": "03",
     "date": "2026-06-25",
     "pages": 84,
-    "anchors_found": 329,
-    "pages_without_anchors": 30
+    "anchors_found": 291,
+    "pages_without_anchors": 41
   },
   {
     "section": "B",
@@ -14,8 +14,8 @@
     "issue": "07",
     "date": "2026-06-25",
     "pages": 99,
-    "anchors_found": 485,
-    "pages_without_anchors": 13
+    "anchors_found": 471,
+    "pages_without_anchors": 14
   },
   {
     "section": "C",
@@ -23,7 +23,7 @@
     "issue": "19",
     "date": "2026-06-25",
     "pages": 257,
-    "anchors_found": 1158,
+    "anchors_found": 1146,
     "pages_without_anchors": 70
   },
   {
@@ -32,8 +32,8 @@
     "issue": "07",
     "date": "2026-06-25",
     "pages": 64,
-    "anchors_found": 301,
-    "pages_without_anchors": 22
+    "anchors_found": 289,
+    "pages_without_anchors": 26
   },
   {
     "section": "E",
@@ -41,8 +41,8 @@
     "issue": "06",
     "date": "2026-06-25",
     "pages": 60,
-    "anchors_found": 191,
-    "pages_without_anchors": 26
+    "anchors_found": 190,
+    "pages_without_anchors": 27
   },
   {
     "section": "F",
@@ -50,7 +50,7 @@
     "issue": "09",
     "date": "2026-06-25",
     "pages": 32,
-    "anchors_found": 112,
+    "anchors_found": 108,
     "pages_without_anchors": 4
   }
 ]

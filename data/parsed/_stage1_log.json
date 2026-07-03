@@ -7,12 +7,22 @@
   {
     "action": "no_anchors_on_page",
     "section": "A",
+    "page": 23
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
     "page": 45
   },
   {
     "action": "no_anchors_on_page",
     "section": "A",
     "page": 46
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
+    "page": 47
   },
   {
     "action": "no_anchors_on_page",
@@ -27,12 +37,22 @@
   {
     "action": "no_anchors_on_page",
     "section": "A",
+    "page": 51
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
     "page": 52
   },
   {
     "action": "no_anchors_on_page",
     "section": "A",
     "page": 53
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
+    "page": 54
   },
   {
     "action": "no_anchors_on_page",
@@ -57,6 +77,11 @@
   {
     "action": "no_anchors_on_page",
     "section": "A",
+    "page": 59
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
     "page": 60
   },
   {
@@ -67,7 +92,37 @@
   {
     "action": "no_anchors_on_page",
     "section": "A",
+    "page": 62
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
+    "page": 63
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
+    "page": 64
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
     "page": 65
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
+    "page": 66
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
+    "page": 67
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "A",
+    "page": 68
   },
   {
     "action": "no_anchors_on_page",
@@ -183,6 +238,11 @@
     "action": "no_anchors_on_page",
     "section": "B",
     "page": 86
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "B",
+    "page": 87
   },
   {
     "action": "no_anchors_on_page",
@@ -597,6 +657,11 @@
   {
     "action": "no_anchors_on_page",
     "section": "D",
+    "page": 41
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "D",
     "page": 42
   },
   {
@@ -612,7 +677,17 @@
   {
     "action": "no_anchors_on_page",
     "section": "D",
+    "page": 45
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "D",
     "page": 46
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "D",
+    "page": 47
   },
   {
     "action": "no_anchors_on_page",
@@ -672,6 +747,11 @@
   {
     "action": "no_anchors_on_page",
     "section": "D",
+    "page": 60
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "D",
     "page": 61
   },
   {
@@ -723,6 +803,11 @@
     "action": "no_anchors_on_page",
     "section": "E",
     "page": 40
+  },
+  {
+    "action": "no_anchors_on_page",
+    "section": "E",
+    "page": 41
   },
   {
     "action": "no_anchors_on_page",

@@ -117,13 +117,25 @@ HEADER_LINE_PATTERN = re.compile(r"^SECTION [A-F]:")
 # (a., b., c.) under a sub-clause are NOT given their own anchor here --
 # they inherit the parent sub-clause's anchor. Revisit at stage 2 if
 # citation granularity needs to go to the list-item level.
+#
+# The pattern is built per-section, matching only that section's own letter.
+# An earlier version matched any of [A-F] regardless of which section was
+# being parsed. Found by checking the chunk-size distribution: Section A
+# had a 14,758-word "F1" chunk, because "F1" (Formula One, referenced
+# constantly throughout this corpus) landing at the start of a wrapped line
+# matched the anchor pattern as if it were a Section F reference -- even
+# while parsing Section A. Confirmed at scale: "F1" false-matched 37 times
+# in Section A, 12 in B, 12 in C, 11 in D. Lower-frequency cases (single
+# occurrences of things like "C3.5.13" or "A7.12.3") are cross-references
+# to other sections' clauses landing at a line start the same way -- same
+# root cause, restricting to the current section's own letter fixes both.
+
+def anchor_pattern_for(section: str) -> re.Pattern:
+    return re.compile(rf"^({section}\d{{1,2}}(?:\.\d{{1,3}}){{0,4}})\b")
 
 
-ANCHOR_PATTERN = re.compile(r"^([A-F]\d{1,2}(?:\.\d{1,3}){0,4})\b")
-
-
-def find_anchor(line_text: str) -> str | None:
-    m = ANCHOR_PATTERN.match(line_text.strip())
+def find_anchor(line_text: str, pattern: re.Pattern) -> str | None:
+    m = pattern.match(line_text.strip())
     return m.group(1) if m else None
 
 
@@ -170,6 +182,7 @@ def dominant_color(page: "pdfplumber.page.Page", line: dict) -> list:
 
 def parse_pdf(path: Path, section: str, log: list) -> list[PageRecord]:
     records: list[PageRecord] = []
+    anchor_pattern = anchor_pattern_for(section)
 
     with pdfplumber.open(path) as pdf:
         for page_no, page in enumerate(pdf.pages, start=1):
@@ -230,7 +243,7 @@ def parse_pdf(path: Path, section: str, log: list) -> list[PageRecord]:
                         })
                     continue
 
-                anchor = find_anchor(line["text"])
+                anchor = find_anchor(line["text"], anchor_pattern)
                 if anchor:
                     anchors.append({"anchor": anchor, "line_index": len(body_lines)})
                 body_lines.append(line["text"])
